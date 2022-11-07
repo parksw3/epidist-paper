@@ -42,7 +42,8 @@ generate_base_plot <- function(future = FALSE) {
     theme(
       panel.grid = element_blank(),
       panel.border = element_blank(),
-      axis.line = element_line()
+      axis.line = element_line(),
+      axis.line.y = element_blank()
     )
   return(base_plot)
 }
