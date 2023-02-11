@@ -655,7 +655,7 @@ tar_group_by(
 #> Establish _targets.R and _targets_r/targets/group_truncated_ebola_obs.R.
 ```
 
-  - Sample observations with 200 observations each.
+  - Add sample size to observations and data type
 
 <!-- end list -->
 
@@ -664,8 +664,7 @@ tar_target(
   sampled_ebola_observations,
   group_truncated_ebola_obs |>
     as.data.table() |>
-    DT(sample(1:.N, min(.N, 200), replace = FALSE)) |>
-    DT(, sample_size := 200) |>
+    DT(, sample_size := .N) |>
     DT(, data_type := "ebola_case_study"),
   pattern = map(group_truncated_ebola_obs)
 )
@@ -675,7 +674,7 @@ tar_target(
 ``` r
 tar_target(list_ebola_observations, {
   sampled_ebola_observations |>
-    split(by = c("scenario", "obs_type", "sample_size", "data_type"))
+    split(by = c("scenario", "obs_type", "data_type"))
 })
 #> Define target list_ebola_observations from chunk code.
 #> Establish _targets.R and _targets_r/targets/list_ebola_observations.R.

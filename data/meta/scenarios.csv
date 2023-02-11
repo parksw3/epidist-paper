@@ -335,11 +335,11 @@ stable,short,200,exponential,333,17,
 stable,short,200,exponential,334,18,
 stable,short,200,exponential,335,19,
 stable,short,200,exponential,336,20,
-120 days,,200,ebola_case_study,337,,real-time
-120 days,,200,ebola_case_study,338,,retrospective
-180 days,,200,ebola_case_study,339,,real-time
-180 days,,200,ebola_case_study,340,,retrospective
-240 days,,200,ebola_case_study,341,,real-time
-240 days,,200,ebola_case_study,342,,retrospective
-60 days,,200,ebola_case_study,343,,real-time
-60 days,,200,ebola_case_study,344,,retrospective
+120 days,,1262,ebola_case_study,337,,real-time
+120 days,,1460,ebola_case_study,338,,retrospective
+180 days,,4609,ebola_case_study,339,,real-time
+180 days,,4992,ebola_case_study,340,,retrospective
+240 days,,7391,ebola_case_study,341,,real-time
+240 days,,7475,ebola_case_study,342,,retrospective
+60 days,,401,ebola_case_study,343,,real-time
+60 days,,428,ebola_case_study,344,,retrospective
