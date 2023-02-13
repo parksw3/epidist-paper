@@ -224,15 +224,13 @@ tar_file(
 #### Observation
 
   - For outbreak simulations, we estimate across sample size ranges (N =
-    10, 100, 200). `N = 200` is the default case. *TODO: Are we happy
-    with these sample sizes? Now the model runs quickly do we want to
-    consider large sample sizes?*.
+    10, 100, 200, 400). `N = 400` is the default case.
 
 <!-- end list -->
 
 ``` r
 tar_target(sample_sizes, {
-  c(10, 100, 200)
+  c(10, 100, 200, 400)
 })
 #> Define target sample_sizes from chunk code.
 #> Establish _targets.R and _targets_r/targets/sample_sizes.R.
