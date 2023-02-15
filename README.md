@@ -116,7 +116,7 @@ naive_fit <- naive_delay(data = truncated_obs, cores = 4, refresh = 0)
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.1 seconds.
-#> Total execution time: 0.4 seconds.
+#> Total execution time: 0.3 seconds.
 ```
 
 Estimate the delay after filtering out the most recent data as crude
