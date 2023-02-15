@@ -109,14 +109,14 @@ First fit a naive lognormal model with no adjustment.
 naive_fit <- naive_delay(data = truncated_obs, cores = 4, refresh = 0)
 #> Running MCMC with 4 parallel chains...
 #> 
-#> Chain 1 finished in 0.2 seconds.
+#> Chain 1 finished in 0.1 seconds.
 #> Chain 2 finished in 0.2 seconds.
 #> Chain 3 finished in 0.1 seconds.
 #> Chain 4 finished in 0.1 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.1 seconds.
-#> Total execution time: 0.3 seconds.
+#> Total execution time: 0.4 seconds.
 ```
 
 Estimate the delay after filtering out the most recent data as crude
@@ -166,12 +166,12 @@ filtered_censored_fit <- filtered_censoring_adjusted_delay(
 #> 
 #> Chain 1 finished in 0.4 seconds.
 #> Chain 2 finished in 0.3 seconds.
-#> Chain 3 finished in 0.4 seconds.
 #> Chain 4 finished in 0.3 seconds.
+#> Chain 3 finished in 0.4 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.4 seconds.
+#> Total execution time: 0.5 seconds.
 ```
 
 Adjust for right truncation.
