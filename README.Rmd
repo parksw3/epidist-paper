@@ -204,8 +204,10 @@ draws |>
 
 Finally, posterior predictive check plot for the latent fit:
 ```{r postcheck}
+latent_truncation_censoring_fit |>
+  extract_lognormal_draws() |>
 plot_posterior_pred_check(
-  latent_truncation_censoring_fit, truncated_obs, truncate = TRUE
+  truncated_obs, truncate = TRUE
 )
 ```
 

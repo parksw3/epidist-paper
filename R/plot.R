@@ -95,24 +95,24 @@ plot_censor_delay <- function(censor_delay) {
 }
 
 #' plot empirical cohort-based or cumulative mean vs posterior mean
-#' @param fit fitted objects
+#' @param draws draws from posterior distribution for a model fit
 #' @param data data used for object fitting
 #' @param type type of mean to plot
 #' @param truncate account for truncation?
 #' @export
-plot_posterior_pred_check <- function(fit,
+plot_posterior_pred_check <- function(draws,
                                       data,
                                       type = c("cohort", "cumulative"),
                                       truncate,
                                       obs_at) {
   type <- match.arg(type)
 
-  gplot <- plot_cohort_mean(data, type)
+  gplot <- data |>
+    calculate_cohort_mean(type) |>
+    plot_cohort_mean()
 
   prange <- range(data$ptime_daily)
-  pvec <- seq(prange[1], prange[2], by=1)
-
-  ee <- extract_lognormal_draws(fit)
+  pvec <- seq(prange[1], prange[2], by = 1)
 
   if (truncate) {
     if (type == "cumulative") {
@@ -120,41 +120,12 @@ plot_posterior_pred_check <- function(fit,
     }
 
     if (missing(obs_at)) {
-      ## FIXME: is this safe for more general usage? our data always have obs_at
-      ## option 1: spit out a warning and take the maximum secondary event time
-      ## the problem with option 1 is  that if someone's looking at old data..?
-      obs_at <- unique(data$obs_at)
+      message("obs_at not specified. Using maximum secondary event time.")
+      obs_at <- max(data$stime_daily)
     }
-
-    estmat <- matrix(NA, nrow = nrow(ee), ncol = length(pvec))
-
-    ## calculate truncated mean
-    message("Calculating truncated means...")
-    for (j in seq_along(pvec)) {
-      estvec <- rep(NA, nrow(ee))
-
-      for (i in seq_len(nrow(ee))) {
-
-        p <- pvec[j]
-
-        numer <- integrate(
-          function(x) {
-            x * dlnorm(x, meanlog = ee$meanlog[i], sdlog = ee$sdlog[i])
-          },
-          lower = 0, upper = obs_at - p
-        )[[1]]
-
-        denom <- integrate(
-          function(x) {
-            dlnorm(x, meanlog = ee$meanlog[i], sdlog = ee$sdlog[i])
-          },
-          lower = 0, upper = obs_at - p
-        )[[1]]
-
-        estmat[i, j] <- numer / denom
-      }
-    }
-
+    estmat <- calculate_truncated_means(
+      draws, obs_at = obs_at, ptime = prange
+    )
     fitted <- data.table(
       pvec = pvec,
       mean = apply(estmat, 2, mean),
@@ -172,7 +143,7 @@ plot_posterior_pred_check <- function(fit,
 
   gplot <- gplot +
     geom_ribbon(
-      data = fitted, aes(pvec, ymin = lwr, ymax  upr), alpha = 0.3,
+      data = fitted, aes(pvec, ymin = lwr, ymax = upr), alpha = 0.3,
       lty = 2, col = "black"
     ) +
     geom_line(data = fitted, aes(pvec, mean))
@@ -182,36 +153,14 @@ plot_posterior_pred_check <- function(fit,
 
 #' Plot empirical cohort-based or cumulative mean
 #' @export
-plot_cohort_mean <- function(data, type = c("cohort", "cumulative")) {
-
-  out <- plot_cohort_mean_internal(data, type)
-
-  gplot <- ggplot(out) +
-    geom_point(aes(ptime_daily, mean, size = n), shape = 1) +
+plot_cohort_mean <- function(data) {
+  gplot <- ggplot(data) +
+    geom_point(aes(x = ptime_daily, y = mean, size = n), shape = 1) +
     theme_bw() +
     scale_size("Number of samples") +
     labs(
       x = "Cohort time (day)",
       y = "Mean delay (days)"
     )
-
   return(gplot)
-}
-
-plot_cohort_mean_internal <- function(data, type=c("cohort", "cumulative")) {
-  type <- match.arg(type)
-
-  out <- data |>
-    copy() |>
-    DT(, .(mean = mean(delay_daily),
-           n = .N), by = "ptime_daily") |>
-    DT(order(rank(ptime_daily)))
-
-  if (type=="cumulative") {
-    out[, mean := cumsum(mean * n)/cumsum(n)]
-    out[, n := cumsum(n)]
-
-  }
-
-  return(out[])
 }
