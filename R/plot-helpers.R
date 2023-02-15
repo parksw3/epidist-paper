@@ -13,7 +13,7 @@ calculate_cohort_mean <- function(data, type = c("cohort", "cumulative"),
     DT(order(rank(ptime_daily)))
 
   if (type == "cumulative") {
-    out[, mean := cumsum(mean * n)/cumsum(n), by = by]
+    out[, mean := cumsum(mean * n) / cumsum(n), by = by]
     out[, n := cumsum(n), by = by]
   }
 
@@ -22,38 +22,43 @@ calculate_cohort_mean <- function(data, type = c("cohort", "cumulative"),
 
 #' Calculate the truncated mean by primary event time
 #' @export
-calculate_truncated_means <- function(draws, obs_at, ptime) {
+calculate_truncated_means <- function(draws, obs_at, ptime,
+                                      distribution = function(x, y, z) {
+                                        dlnorm(x, meanlog = y, sdlog = z)
+                                      }) {
   if (length(ptime) != 2) {
     stop("ptime must be a vector of length 2.")
   }
-  pvec <- seq(ptime[1], ptime[2], by = 1)
-  estmat <- matrix(NA, nrow = nrow(draws), ncol = length(pvec))
+  trunc_mean <- draws |>
+    copy() |>
+    DT(,
+      obs_horizon := list(seq(ptime[1] - obs_at, ptime[2] - obs_at))
+    ) |>
+    DT(,
+      .(obs_horizon = unlist(obs_horizon)),
+      by = setdiff(colnames(draws), "obs_horizon")
+    ) |>
+    DT(,
+      trunc_mean := purrr::pmap_dbl(
+        list(x = obs_horizon, m = meanlog, s = sdlog),
+        \(x, m, s) {
+          numer <- integrate(
+            function(y) {
+              y * distribution(y, m, s)
+            },
+            lower = 0, upper = abs(x)
+          )[[1]]
 
-  ## calculate truncated mean
-  message("Calculating truncated means...")
-  for (j in seq_along(pvec)) {
-    estvec <- rep(NA, nrow(draws))
+          denom <- integrate(
+            function(y) {
+              distribution(y, m, s)
+            },
+            lower = 0, upper = abs(x)
+          )[[1]]
 
-    for (i in seq_len(nrow(draws))) {
-
-      p <- pvec[j]
-
-      numer <- integrate(
-        function(x) {
-          x * dlnorm(x, meanlog = draws$meanlog[i], sdlog = draws$sdlog[i])
-        },
-        lower = 0, upper = obs_at - p
-      )[[1]]
-
-      denom <- integrate(
-        function(x) {
-          dlnorm(x, meanlog = draws$meanlog[i], sdlog = draws$sdlog[i])
-        },
-        lower = 0, upper = obs_at - p
-      )[[1]]
-
-      estmat[i, j] <- numer / denom
-    }
-  }
-  return(estmat)
+          return(numer / denom)
+        }
+      )
+    )
+  return(trunc_mean)
 }
