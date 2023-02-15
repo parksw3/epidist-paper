@@ -110,13 +110,13 @@ naive_fit <- naive_delay(data = truncated_obs, cores = 4, refresh = 0)
 #> Running MCMC with 4 parallel chains...
 #> 
 #> Chain 1 finished in 0.2 seconds.
-#> Chain 2 finished in 0.1 seconds.
+#> Chain 2 finished in 0.2 seconds.
 #> Chain 3 finished in 0.1 seconds.
 #> Chain 4 finished in 0.1 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.1 seconds.
-#> Total execution time: 0.4 seconds.
+#> Total execution time: 0.3 seconds.
 ```
 
 Estimate the delay after filtering out the most recent data as crude
@@ -219,14 +219,14 @@ latent_truncation_censoring_fit <- latent_truncation_censoring_adjusted_delay(
 )
 #> Running MCMC with 4 parallel chains...
 #> 
-#> Chain 1 finished in 3.4 seconds.
-#> Chain 2 finished in 3.4 seconds.
 #> Chain 3 finished in 3.4 seconds.
 #> Chain 4 finished in 3.3 seconds.
+#> Chain 1 finished in 3.5 seconds.
+#> Chain 2 finished in 3.5 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 3.4 seconds.
-#> Total execution time: 3.5 seconds.
+#> Total execution time: 3.7 seconds.
 ```
 
 ### Summarise model posteriors and compare to known truth

@@ -20,7 +20,7 @@ calculate_cohort_mean <- function(data, type = c("cohort", "cumulative"),
   return(out[])
 }
 
-#' Calculate the truncated mean by primary event time
+#' Calculate the truncated mean by observation horizon
 #' @export
 calculate_truncated_means <- function(draws, obs_at, ptime,
                                       distribution = function(x, y, z) {

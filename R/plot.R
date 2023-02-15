@@ -107,8 +107,13 @@ plot_posterior_pred_check <- function(draws,
                                       obs_at) {
   type <- match.arg(type)
 
+  if (missing(obs_at)) {
+    message("obs_at not specified. Using maximum secondary event time.")
+    obs_at <- max(data$stime_daily)
+  }
   gplot <- data |>
     calculate_cohort_mean(type) |>
+    DT(, ptime_daily := ptime_daily - obs_at) |>
     plot_cohort_mean()
 
   prange <- range(data$ptime_daily)
@@ -118,23 +123,17 @@ plot_posterior_pred_check <- function(draws,
     if (type == "cumulative") {
       stop("Don't use the truncate option with cumulative mean.")
     }
-
-    if (missing(obs_at)) {
-      message("obs_at not specified. Using maximum secondary event time.")
-      obs_at <- max(data$stime_daily)
-    }
     estmat <- calculate_truncated_means(
       draws, obs_at = obs_at, ptime = prange
     )
-    fitted <- data.table(
-      pvec = pvec,
-      mean = apply(estmat, 2, mean),
-      lwr = apply(estmat, 2, quantile, 0.025),
-      upr = apply(estmat, 2, quantile, 0.975)
-    )
+    fitted <- estmat[, .(
+      mean = mean(trunc_mean),
+      lwr = quantile(trunc_mean, 0.025),
+      upr = quantile(trunc_mean, 0.975)
+    ), by = "obs_horizon"]
   } else {
     fitted <- data.table(
-      pvec = pvec,
+      pvec = obs_at - pvec,
       mean = mean(ee$mean),
       lwr = quantile(ee$mean, 0.025),
       upr = quantile(ee$mean, 0.975)
@@ -143,10 +142,11 @@ plot_posterior_pred_check <- function(draws,
 
   gplot <- gplot +
     geom_ribbon(
-      data = fitted, aes(pvec, ymin = lwr, ymax = upr), alpha = 0.3,
+      data = fitted, aes(x = obs_horizon, ymin = lwr, ymax = upr), alpha = 0.3,
       lty = 2, col = "black"
     ) +
-    geom_line(data = fitted, aes(pvec, mean))
+    geom_line(data = fitted, aes(x = obs_horizon, y = mean)) +
+    labs(x = "Days prior to observation")
 
   return(gplot)
 }
