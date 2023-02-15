@@ -109,8 +109,8 @@ First fit a naive lognormal model with no adjustment.
 naive_fit <- naive_delay(data = truncated_obs, cores = 4, refresh = 0)
 #> Running MCMC with 4 parallel chains...
 #> 
-#> Chain 1 finished in 0.1 seconds.
-#> Chain 2 finished in 0.2 seconds.
+#> Chain 1 finished in 0.2 seconds.
+#> Chain 2 finished in 0.1 seconds.
 #> Chain 3 finished in 0.1 seconds.
 #> Chain 4 finished in 0.1 seconds.
 #> 
@@ -135,7 +135,7 @@ filtered_fit <- filtered_naive_delay(
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.1 seconds.
-#> Total execution time: 0.3 seconds.
+#> Total execution time: 0.2 seconds.
 ```
 
 Adjust for date censoring.
@@ -171,7 +171,7 @@ filtered_censored_fit <- filtered_censoring_adjusted_delay(
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.5 seconds.
+#> Total execution time: 0.4 seconds.
 ```
 
 Adjust for right truncation.
@@ -283,7 +283,7 @@ ground truth.
 ``` r
 draws |>
   make_relative_to_truth(draws_to_long(secondary_dist)) |>
-  plot_relative_recovery(y= model, fill = model) +
+  plot_relative_recovery(y = model, fill = model) +
   facet_wrap(vars(parameter), nrow = 1, scales = "free_x") +
   scale_fill_brewer(palette = "Dark2") +
   guides(fill = guide_none()) +
@@ -297,8 +297,10 @@ draws |>
 Finally, posterior predictive check plot for the latent fit:
 
 ``` r
+latent_truncation_censoring_fit |>
+  extract_lognormal_draws() |>
 plot_posterior_pred_check(
-  latent_truncation_censoring_fit, truncated_obs, truncate = TRUE
+  truncated_obs, truncate = TRUE
 )
 ```
 
