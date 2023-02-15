@@ -1,7 +1,7 @@
 #' Calculate the cohort-based or cumulative mean
 #' @export
 calculate_cohort_mean <- function(data, type = c("cohort", "cumulative"),
-                                  by = c()) {
+                                  by = c(), obs_at) {
   type <- match.arg(type)
 
   out <- data |>
@@ -15,6 +15,11 @@ calculate_cohort_mean <- function(data, type = c("cohort", "cumulative"),
   if (type == "cumulative") {
     out[, mean := cumsum(mean * n) / cumsum(n), by = by]
     out[, n := cumsum(n), by = by]
+  }
+
+  if (!missing(obs_at)) {
+    out <- out |>
+      DT(, ptime_daily := ptime_daily - obs_at)
   }
 
   return(out[])
@@ -57,7 +62,8 @@ calculate_truncated_means <- function(draws, obs_at, ptime,
           )[[1]]
 
           return(numer / denom)
-        }
+        },
+        .progress = TRUE
       )
     )
   return(trunc_mean)

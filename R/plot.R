@@ -95,59 +95,39 @@ plot_censor_delay <- function(censor_delay) {
 }
 
 #' plot empirical cohort-based or cumulative mean vs posterior mean
-#' @param draws draws from posterior distribution for a model fit
+#' @param summarised_mean Summarised mean as produced by [summarise_variable()]
 #' @param data data used for object fitting
-#' @param type type of mean to plot
 #' @param truncate account for truncation?
+#' @param mean Should the mean be plotted? Logical, defaults to `FALSE`.
+#' @param ... Additional arguments passed to [ggplot2::aes()].
 #' @export
-plot_posterior_pred_check <- function(draws,
-                                      data,
-                                      type = c("cohort", "cumulative"),
-                                      truncate,
-                                      obs_at) {
-  type <- match.arg(type)
+plot_mean_posterior_pred <- function(summarised_mean, obs_mean, 
+                                     alpha = 0.3, mean = FALSE, ...) {
+  gplot <- summarised_mean |>
+    ggplot()
 
-  if (missing(obs_at)) {
-    message("obs_at not specified. Using maximum secondary event time.")
-    obs_at <- max(data$stime_daily)
-  }
-  gplot <- data |>
-    calculate_cohort_mean(type) |>
-    DT(, ptime_daily := ptime_daily - obs_at) |>
-    plot_cohort_mean()
-
-  prange <- range(data$ptime_daily)
-  pvec <- seq(prange[1], prange[2], by = 1)
-
-  if (truncate) {
-    if (type == "cumulative") {
-      stop("Don't use the truncate option with cumulative mean.")
-    }
-    estmat <- calculate_truncated_means(
-      draws, obs_at = obs_at, ptime = prange
-    )
-    fitted <- estmat[, .(
-      mean = mean(trunc_mean),
-      lwr = quantile(trunc_mean, 0.025),
-      upr = quantile(trunc_mean, 0.975)
-    ), by = "obs_horizon"]
-  } else {
-    fitted <- data.table(
-      pvec = obs_at - pvec,
-      mean = mean(ee$mean),
-      lwr = quantile(ee$mean, 0.025),
-      upr = quantile(ee$mean, 0.975)
-    )
+  if (!missing(obs_mean)) {
+    gplot <- gplot +
+      geom_point(
+        data = obs_mean,
+        aes(x = ptime_daily, y = mean, size = n),
+        col = "black", shape = 1
+      ) +
+      guides(size = guide_legend(title = "Number of samples"))
   }
 
   gplot <- gplot +
     geom_ribbon(
-      data = fitted, aes(x = obs_horizon, ymin = lwr, ymax = upr), alpha = 0.3,
-      lty = 2, col = "black"
+      aes(x = obs_horizon, ymin = q5, ymax = q95, ...), alpha = alpha
     ) +
-    geom_line(data = fitted, aes(x = obs_horizon, y = mean)) +
-    labs(x = "Days prior to observation")
+    labs(x = "Days prior to observation", y = "Mean delay (days)") +
+    theme_bw() +
+    theme(legend.position = "bottom")
 
+  if (mean) {
+    gplot <- gplot +
+      geom_line(aes(x = obs_horizon, y = mean, ...))
+  }
   return(gplot)
 }
 
