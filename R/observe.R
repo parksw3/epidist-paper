@@ -85,3 +85,11 @@ pad_zero <- function(data, pad = 1e-3) {
     DT(delay_lwr == 0, delay_lwr := pad) |>
     DT(delay_daily == 0, delay_daily := pad)
 }
+
+#' Drop zero observations as unstable in a lognormal distribution
+#' @export
+drop_zero <- function(data) {
+  data <- data |>
+    data.table::copy() |>
+    DT(delay_daily != 0)
+}
