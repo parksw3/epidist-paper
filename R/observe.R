@@ -31,9 +31,9 @@ filter_obs_by_obs_time <- function(linelist, obs_time) {
     # Update observation time by when we are looking
     DT(, obs_at := obs_time) |>
     DT(, obs_time := obs_time - ptime) |>
-    # Assuming truncation at the end of the censoring window
+    # Assuming truncation at the beginning of the censoring window
     DT(,
-      censored_obs_time := obs_at - ptime_upr
+      censored_obs_time := obs_at - ptime_lwr
     ) |>
     DT(, censored := "interval") |>
     DT(stime_upr <= obs_at)
@@ -64,8 +64,8 @@ filter_obs_by_ptime <- function(linelist, obs_time,
   # make observation time as specified
   truncated_linelist <- truncated_linelist |>
     DT(, obs_time := obs_at - ptime) |>
-    # Assuming truncation at the end of the censoring window
-    DT(, censored_obs_time := obs_at - ptime_upr)
+    # Assuming truncation at the beginning of the censoring window
+    DT(, censored_obs_time := obs_at - ptime_lwr)
 
   # set observation time to artifial observation time
   if (obs_at == "obs_secondary") {
