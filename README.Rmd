@@ -206,21 +206,28 @@ draws |>
 
 Finally, check the mean posterior predictions for each model against the observed daily cohort mean.
 ```{r postcheck}
-draws |>
+truncated_draws <- draws |>
   calculate_truncated_means(
     obs_at = max(truncated_obs$stime_daily),
     ptime = range(truncated_obs$ptime_daily)
   ) |>
   summarise_variable(variable = "trunc_mean", by = c("obs_horizon", "model")) |>
+  DT(, model := factor(model, levels = rev(names(models))))
+
+
+truncated_draws |>
   plot_mean_posterior_pred(
     truncated_obs |>
       calculate_cohort_mean(
         type = "cohort", obs_at = max(truncated_obs$stime_daily)
       ),
-    fill = model, mean = FALSE
+    col = model, fill = model, mean = TRUE, ribbon = TRUE
   ) +
-  guides(fill = guide_legend(title = "Model", nrow = 2)) +
-  scale_fill_brewer(palette = "Dark2") +
+  guides(
+    fill = guide_legend(title = "Model", nrow = 4),
+    col = guide_legend(title = "Model", nrow = 4)
+  ) +
+  scale_fill_brewer(palette = "Dark2", aesthetics = c("fill", "colour")) +
   theme(legend.direction = "vertical")
 ```
 

@@ -99,10 +99,15 @@ plot_censor_delay <- function(censor_delay) {
 #' @param data data used for object fitting
 #' @param truncate account for truncation?
 #' @param mean Should the mean be plotted? Logical, defaults to `FALSE`.
+#' @param ribbon Should the quantile ribbon be plotted? Logical, defaults to
+#' `TRUE`.
+#' @param ribbon_bounds Bounds of the quantile ribbon. Defaults to 
+#' `c(0.05, 0.95)` which corresponds to the 90% credible interval.
 #' @param ... Additional arguments passed to [ggplot2::aes()].
 #' @export
-plot_mean_posterior_pred <- function(summarised_mean, obs_mean, 
-                                     alpha = 0.3, mean = FALSE, ...) {
+plot_mean_posterior_pred <- function(summarised_mean, obs_mean,
+                                     alpha = 0.3, mean = FALSE, ribbon = TRUE,
+                                     ribbon_bounds = c(0.05, 0.95), ...) {
   gplot <- summarised_mean |>
     ggplot()
 
@@ -117,18 +122,31 @@ plot_mean_posterior_pred <- function(summarised_mean, obs_mean,
   }
 
   gplot <- gplot +
-    geom_ribbon(
-      aes(x = obs_horizon, ymin = q5, ymax = q95, ...), alpha = alpha
-    ) +
     labs(x = "Days prior to observation", y = "Mean delay (days)") +
     theme_bw() +
     theme(legend.position = "bottom")
 
+  if (ribbon) {
+    gplot <- gplot +
+      geom_ribbon(
+        aes(
+          x = obs_horizon,
+          ymin = .data[[make_ribbon_bound(ribbon_bounds[1])]],
+          ymax = .data[[make_ribbon_bound(ribbon_bounds[2])]],
+          ...
+        ),
+        alpha = alpha, col = NA
+      )
+  }
   if (mean) {
     gplot <- gplot +
       geom_line(aes(x = obs_horizon, y = mean, ...))
   }
   return(gplot)
+}
+
+make_ribbon_bound <- function(quantile) {
+  paste0("q", 100 * quantile)
 }
 
 #' Plot empirical cohort-based or cumulative mean

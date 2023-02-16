@@ -109,7 +109,7 @@ First fit a naive lognormal model with no adjustment.
 naive_fit <- naive_delay(data = truncated_obs, cores = 4, refresh = 0)
 #> Running MCMC with 4 parallel chains...
 #> 
-#> Chain 1 finished in 0.1 seconds.
+#> Chain 1 finished in 0.2 seconds.
 #> Chain 2 finished in 0.2 seconds.
 #> Chain 3 finished in 0.1 seconds.
 #> Chain 4 finished in 0.1 seconds.
@@ -166,12 +166,12 @@ filtered_censored_fit <- filtered_censoring_adjusted_delay(
 #> 
 #> Chain 1 finished in 0.4 seconds.
 #> Chain 2 finished in 0.3 seconds.
-#> Chain 4 finished in 0.3 seconds.
 #> Chain 3 finished in 0.4 seconds.
+#> Chain 4 finished in 0.3 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.5 seconds.
+#> Total execution time: 0.4 seconds.
 ```
 
 Adjust for right truncation.
@@ -185,11 +185,11 @@ truncation_fit <- truncation_adjusted_delay(
 #> Chain 1 finished in 0.7 seconds.
 #> Chain 2 finished in 0.7 seconds.
 #> Chain 3 finished in 0.7 seconds.
-#> Chain 4 finished in 0.7 seconds.
+#> Chain 4 finished in 0.8 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.7 seconds.
-#> Total execution time: 0.8 seconds.
+#> Total execution time: 1.0 seconds.
 ```
 
 Adjust for right truncation and date censoring.
@@ -222,7 +222,7 @@ latent_truncation_censoring_fit <- latent_truncation_censoring_adjusted_delay(
 #> Chain 1 finished in 3.4 seconds.
 #> Chain 3 finished in 3.4 seconds.
 #> Chain 4 finished in 3.3 seconds.
-#> Chain 2 finished in 3.5 seconds.
+#> Chain 2 finished in 3.4 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 3.4 seconds.
@@ -300,21 +300,28 @@ Finally, check the mean posterior predictions for each model against the
 observed daily cohort mean.
 
 ``` r
-draws |>
+truncated_draws <- draws |>
   calculate_truncated_means(
     obs_at = max(truncated_obs$stime_daily),
     ptime = range(truncated_obs$ptime_daily)
   ) |>
   summarise_variable(variable = "trunc_mean", by = c("obs_horizon", "model")) |>
+  DT(, model := factor(model, levels = rev(names(models))))
+
+
+truncated_draws |>
   plot_mean_posterior_pred(
     truncated_obs |>
       calculate_cohort_mean(
         type = "cohort", obs_at = max(truncated_obs$stime_daily)
       ),
-    fill = model, mean = FALSE
+    col = model, fill = model, mean = TRUE, ribbon = TRUE
   ) +
-  guides(fill = guide_legend(title = "Model", nrow = 2)) +
-  scale_fill_brewer(palette = "Dark2") +
+  guides(
+    fill = guide_legend(title = "Model", nrow = 4),
+    col = guide_legend(title = "Model", nrow = 4)
+  ) +
+  scale_fill_brewer(palette = "Dark2", aesthetics = c("fill", "colour")) +
   theme(legend.direction = "vertical")
 ```
 

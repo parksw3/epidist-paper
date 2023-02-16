@@ -4,10 +4,26 @@
 \alias{plot_mean_posterior_pred}
 \title{plot empirical cohort-based or cumulative mean vs posterior mean}
 \usage{
-plot_mean_posterior_pred(summarised_mean, obs_mean, obs_at, alpha = 0.3, ...)
+plot_mean_posterior_pred(
+  summarised_mean,
+  obs_mean,
+  alpha = 0.3,
+  mean = FALSE,
+  ribbon = TRUE,
+  ribbon_bounds = c(0.05, 0.95),
+  ...
+)
 }
 \arguments{
 \item{summarised_mean}{Summarised mean as produced by \code{\link[=summarise_variable]{summarise_variable()}}}
+
+\item{mean}{Should the mean be plotted? Logical, defaults to \code{FALSE}.}
+
+\item{ribbon}{Should the quantile ribbon be plotted? Logical, defaults to
+\code{TRUE}.}
+
+\item{ribbon_bounds}{Bounds of the quantile ribbon. Defaults to
+\code{c(0.05, 0.95)} which corresponds to the 90\% credible interval.}
 
 \item{...}{Additional arguments passed to \code{\link[ggplot2:aes]{ggplot2::aes()}}.}
 
