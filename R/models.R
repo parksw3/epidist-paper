@@ -260,52 +260,10 @@ latent_truncation_censoring_adjusted_delay <- function(
   return(fit)
 }
 
-#' Estimate delays from the backward delay distribution
-#' @export
-backward_delay <- function(data, data_cases, ...) {
-  data <- drop_zero(data)
-
-  if (!all(c("time", "cases") %in% colnames(data_cases))) {
-    stop(
-      "`data_cases` must be a data.frame object containing `time` and `cases` columns" # nolint
-    )
-  }
-
-  tmin <- pmin(min(data$ptime_daily), min(data_cases$time))
-  tmax <- pmax(max(data$stime_daily), max(data_cases$time))
-
-  data_cases_tmp <- data.table(
-    time = tmin:tmax,
-    cases = 1e-3
-  )
-
-  data_cases_tmp[match(data_cases$time, time), cases := data_cases$cases]
-  data_cases <- data_cases_tmp
-
-  cases <- data_cases$cases
-  tmin <- min(data_cases$time)
-  tlength <- nrow(data_cases)
-
-  model <- cmdstan_model("data/models/lognormal_dynamical_full.stan")
-
-  standata <- list(
-    N = nrow(data),
-    delay_lwr = data$delay_lwr,
-    delay_upr = data$delay_upr,
-    stime_daily = data$stime_daily,
-    tlength = nrow(data_cases),
-    tmin = min(data_cases$time),
-    cases = data_cases$cases
-  )
-
-  fit <- model$sample(data = standata, ...)
-
-}
-
 ## this doesn't run right now...
 #' Estimate delays from the backward delay distribution + brms
 #' @param data_cases data frame consisting of integer time column and incidence column
-backward_delay_brms <- function(
+dynamical_censoring_adjusted_delay <- function(
     formula = brms::bf(
       delay_lwr | cens(censored, delay_upr) ~ 1, sigma ~ 1
     ),
