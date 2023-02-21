@@ -160,8 +160,9 @@ runtime_plot <- clean_diagnostics |>
   theme(legend.position = "bottom")
 
 # Plot Percentage with divergent transitions
+# Filter for >0.1% divergent transitions
 divergent_transitions_plot <- clean_diagnostics |>
-  DT(per_divergent_transitions > 0.01) |>
+  DT(per_divergent_transitions > 0.001) |>
   ggplot() +
   aes(
     y = model, x = per_divergent_transitions,
@@ -222,7 +223,7 @@ divergent_transitions_plot <- clean_diagnostics |>
 
 
 # outbreak_divergent_transitions_plot <- clean_diagnostics |>
-#   DT(per_divergent_transitions > 0.01) |>
+#   DT(per_divergent_transitions > 0.001) |>
 #   DT(data_type %in% "Outbreak") |>
 #   DT(, time  := time |> factor() |> fct_rev()) |>
 #   ggplot() +

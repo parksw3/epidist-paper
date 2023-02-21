@@ -262,7 +262,8 @@ latent_truncation_censoring_adjusted_delay <- function(
 
 ## this doesn't run right now...
 #' Estimate delays from the backward delay distribution + brms
-#' @param data_cases data frame consisting of integer time column and incidence column
+#' @param data_cases data frame consisting of integer time column and incidence
+#' column
 dynamical_censoring_adjusted_delay <- function(
     formula = brms::bf(
       delay_lwr | cens(censored, delay_upr) ~ 1, sigma ~ 1
@@ -271,13 +272,6 @@ dynamical_censoring_adjusted_delay <- function(
     data_cases,
     fn = brms::brm,
     family = "lognormal",
-    scode_data = "
-      array[N] int stime_daily;
-      int<lower=1> tlength; // time series length
-      int tmin;
-  
-      array[tlength] int cases;
-    ",
     scode_tparameters = "
       array[tlength] real cdenom;
   
@@ -289,7 +283,7 @@ dynamical_censoring_adjusted_delay <- function(
           if (j==1) {
             cdenom[i] += 
               exp(lognormal_lcdf(j | Intercept, exp(Intercept_sigma)) +
-                log(cases[i-j]));
+                log_cases[i-j]);
           } else {
             cdenom[i] += 
               exp(
@@ -297,7 +291,7 @@ dynamical_censoring_adjusted_delay <- function(
                   lognormal_lcdf(j | Intercept, exp(Intercept_sigma)), 
                   lognormal_lcdf(j - 1 | Intercept, exp(Intercept_sigma))
                 ) + 
-                log(cases[i-j])
+                log_cases[i-j]
               );
           }
         }
@@ -314,7 +308,7 @@ dynamical_censoring_adjusted_delay <- function(
 
   if (as.character(formula)[1] != "delay_lwr | cens(censored, delay_upr) ~ 1") {
     warning(
-      "Only `delay_lwr | cens(censored, delay_upr) ~ 1` has been tested. The current implementation is not robust to non-daily censoring or the use of multiple time series" # nolint
+      "Only `delay_lwr | cens(censored, delay_upr) ~ 1` has been tested. The current implementation is not robust to non-daily censoring, the use of multiple time series, or models that have more than simple intercepts" # nolint
     )
   }
 
@@ -342,13 +336,14 @@ dynamical_censoring_adjusted_delay <- function(
 
   data_cases_tmp <- data.table(
     time = tmin:tmax,
-    cases = 1e-2
+    cases = 1e-1
   )
 
   data_cases_tmp[match(data_cases$time, time), cases := data_cases$cases]
   data_cases <- data_cases_tmp
 
   cases <- data_cases$cases
+  log_cases <- log(cases)
   tmin <- min(data_cases$time)
   tlength <- nrow(data_cases)
 
@@ -369,9 +364,9 @@ dynamical_censoring_adjusted_delay <- function(
       name = "stime_daily"
     ),
     brms::stanvar(
-      x = cases, block = "data",
-      scode = "array[tlength] int cases;",
-      name = "cases"
+      x = log_cases, block = "data",
+      scode = "array[tlength] int log_cases;",
+      name = "log_cases"
     )
   )
 
@@ -394,7 +389,7 @@ dynamical_censoring_adjusted_delay <- function(
           // but sort of the best we can do without sacrificing a ton of computational power
           for (j in 1:(i-1)) {
             backwardmean[i] += exp(log_diff_exp(lognormal_lcdf(j | Intercept, exp(Intercept_sigma)), 
-                lognormal_lcdf(j - 1 | Intercept, exp(Intercept_sigma))) + log(cases[i-j]) + log(j-0.5) - log(cdenom[i]));
+                lognormal_lcdf(j - 1 | Intercept, exp(Intercept_sigma))) + log_cases[i-j] + log(j-0.5) - log(cdenom[i]));
           }
         }
   "
