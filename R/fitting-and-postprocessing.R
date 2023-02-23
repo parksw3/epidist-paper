@@ -4,7 +4,7 @@ sample_model <- function(model, data, scenario = data.table::data.table(id = 1),
                          diagnostics = TRUE, ...) {
 
   out <- scenario |>
-    DT(, fit := list(fit))
+    copy()
 
   # Setup failure tolerant model fitting
   fit_model <- function(model, data, ...) {
