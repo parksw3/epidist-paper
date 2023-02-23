@@ -11,7 +11,7 @@ sample_model <- function(model, data, scenario = data.table::data.table(id = 1),
     cmdstanr::cmdstan_model(model)$sample(data = data, ...)
   }
   safe_fit_model <- purrr::safely(fit_model)
-  fit <- safe_fit_model(model, data)
+  fit <- safe_fit_model(model, data, ...)
 
   if (!is.null(fit$error)) {
     out <- out |>
