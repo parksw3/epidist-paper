@@ -2,10 +2,26 @@
 #' @export
 sample_model <- function(model, data, scenario = data.table::data.table(id = 1),
                          diagnostics = TRUE, ...) {
-  fit <- cmdstanr::cmdstan_model(model)$sample(data = data, ...)
 
   out <- scenario |>
     DT(, fit := list(fit))
+
+  # Setup failure tolerant model fitting
+  fit_model <- function(model, data, ...) {
+    cmdstanr::cmdstan_model(model)$sample(data = data, ...)
+  }
+  safe_fit_model <- purrr::safely(fit_model)
+  fit <- safe_fit_model(model, data)
+
+  if (!is.null(fit$error)) {
+    out <- out |>
+      DT(, fit := NULL) |>
+      DT(, error := fit$error)
+  }else {
+    out <- out |>
+      DT(, fit := list(fit$result)) |>
+      DT(, error := NULL)
+  }
 
   if (diagnostics) {
     diag <- fit$sampler_diagnostics(format = "df")
