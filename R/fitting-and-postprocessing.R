@@ -17,10 +17,12 @@ sample_model <- function(model, data, scenario = data.table::data.table(id = 1),
     out <- out |>
       DT(, fit := NULL) |>
       DT(, error := fit$error)
+    diagnostics <- FALSE
   }else {
     out <- out |>
       DT(, fit := list(fit$result)) |>
       DT(, error := NULL)
+    fit <- fit$result
   }
 
   if (diagnostics) {
