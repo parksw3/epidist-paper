@@ -90,24 +90,45 @@ clean_diagnostics <- diagnostics |>
   DT(, r := factor(r))
 
 # Save fits with convergence issues
-clean_diagnostics |>
-  DT(max_rhat > 1.05) |>
-  fwrite(
-    here("data", "diagnostics", "summary", "convergence_issues.csv")
+convergence_issues <- clean_diagnostics |>
+  DT(max_rhat > 1.05)
+
+if (nrow(convergence_issues) > 0) {
+  message(
+    "There were ", nrow(convergence_issues), " convergence issues"
   )
+}
+
+fwrite(
+  convergence_issues, 
+  here("data", "diagnostics", "summary", "convergence_issues.csv")
+)
+
 # Save fits with issues with divergent transitions
-clean_diagnostics |>
-  DT(per_divergent_transitions > 0.01) |>
-  fwrite(
-    here("data", "diagnostics", "summary", "divergent_transitions.csv")
+divergent_transitions <- clean_diagnostics |>
+  DT(per_divergent_transitions > 0.01)
+
+if (nrow(divergent_transitions) > 0) {
+  message(
+    "There were ", nrow(divergent_transitions), " divergent transitions"
   )
+}
+
+fwrite(
+  divergent_transitions,
+  here("data", "diagnostics", "summary", "divergent_transitions.csv")
+)
+
 # Save any failed fits
-if (any(colnames(clean_diagnostics) %in% "fit"))) {
-  clean_diagnostics |>
-    DT(is.null(fit)) |>
-    fwrite(
-      here("data", "diagnostics", "summary", "failed_fits.csv")
-    )
+if (any(colnames(clean_diagnostics) %in% "error")) {
+  failed_fits <- clean_diagnostics |>
+    DT(!is.na(error))
+  message(
+    "There were ", nrow(failed_fits), " failed fits"
+  )
+  fwrite(
+    failed_fits, here("data", "diagnostics", "summary", "failed_fits.csv")
+  )
 }
 
 # Plot mean and distribution of runtimes by model and case study for each
