@@ -67,6 +67,9 @@ extract_lognormal_draws <- function(
   data, id_vars, from_dt = FALSE
 ) {
   if (from_dt) {
+    if (!any(colnames(data) %in% "fit")) {
+      return(id_vars[])
+    }
     draws <- data$fit[[1]]$draws(variables = c("Intercept", "Intercept_sigma"))
   }else {
     draws <- data
@@ -134,16 +137,16 @@ summarise_draws <- function(draws, sf, not_by = "value", by) {
 
   summarised_draws <- draws[,
     .(
-      mean = mean(value),
-      median = median(value),
-      q2.5 = quantile(value, 0.025),
-      q5 = quantile(value, 0.05),
-      q20 = quantile(value, 0.2),
-      q35 = quantile(value, 0.35),
-      q65 = quantile(value, 0.65),
-      q80 = quantile(value, 0.8),
-      q95 = quantile(value, 0.95),
-      q97.5 = quantile(value, 0.975)
+      mean = mean(value, na.rm = TRUE),
+      median = median(value, na.rm = TRUE),
+      q2.5 = quantile(value, 0.025, na.rm = TRUE),
+      q5 = quantile(value, 0.05, na.rm = TRUE),
+      q20 = quantile(value, 0.2, na.rm = TRUE),
+      q35 = quantile(value, 0.35, na.rm = TRUE),
+      q65 = quantile(value, 0.65, na.rm = TRUE),
+      q80 = quantile(value, 0.8, na.rm = TRUE),
+      q95 = quantile(value, 0.95, na.rm = TRUE),
+      q97.5 = quantile(value, 0.975, na.rm = TRUE)
     ),
     by = by_cols
   ]

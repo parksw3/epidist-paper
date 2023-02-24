@@ -869,19 +869,9 @@ tar_map(
       fit[, -c("fit")], paste0(model_name, ".csv"), path = "data/diagnostics"
     )
   ),
-  tar_file(
-    save_failures,
-    fit |>
-      DT(is.null(fit)) |>
-      DT(,-c("fit")) |>
-      save_csv(
-        paste0(model_name, ".csv"), path = "data/failures"
-      )
-  ),
   tar_target(
     draws,
     fit |>
-      DT(!is.null(fit)) |>
       extract_lognormal_draws(scenarios, from_dt = TRUE),
     pattern = map(fit, scenarios)
   ),

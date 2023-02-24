@@ -101,33 +101,14 @@ clean_diagnostics |>
   fwrite(
     here("data", "diagnostics", "summary", "divergent_transitions.csv")
   )
-# Metrics of interest
-# - run_time
-# - rhat (per with rhat > 1.05)?
-# - per_divergent transitions
-# - per_at _max_tree_depth and max_tree_depth == 10 (or whatever max we set)
-# - Effective sample size (not currently collected). Both bulk and tail.
-
-# Strata of interest
-# - model
-# - data type (outbreak/exponential/case study)
-# - scenario/observation day
-# - distribution (short, medium, long)
-
-# Variables to control for
-# - sample size - just focus on 200 for now and perhaps include diagnostics for other samples in the the SI? # nolint
-# - observation type (i.e real-time or retrospective). Suggest we drop retrospective and focus on real-time. # nolint
-
-# Plot types
-# - violin
-# - density
-# - mean as point/line?
-
-# Plot Percentage with an Rhat greater than 1.05
-# - Line and point plot
-# - X axis: Models
-# - Y axis: Percentage with Rhat > 1.05
-# - Colour: Distribution
+# Save any failed fits
+if (any(colnames(clean_diagnostics) %in% "fit"))) {
+  clean_diagnostics |>
+    DT(is.null(fit)) |>
+    fwrite(
+      here("data", "diagnostics", "summary", "failed_fits.csv")
+    )
+}
 
 # Plot mean and distribution of runtimes by model and case study for each
 # sample size
