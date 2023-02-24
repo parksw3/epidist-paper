@@ -59,7 +59,7 @@ tar_map(
     save_failures,
     fit |>
       DT(is.null(fit)) |>
-      DT(-c("fit")) |>
+      DT(,-c("fit")) |>
       save_csv(
         paste0(model_name, ".csv"), path = "data/failures"
       )

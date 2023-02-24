@@ -336,7 +336,7 @@ dynamical_censoring_adjusted_delay <- function(
 
   data_cases_tmp <- data.table(
     time = tmin:tmax,
-    cases = 1
+    cases = 0.1
   )
 
   data_cases_tmp[match(data_cases$time, time), cases := data_cases$cases]
@@ -404,7 +404,6 @@ dynamical_censoring_adjusted_delay <- function(
   stanvars_all <- stanvars_data + stanvars_tparameters + stanvars_model +
    stanvars_gp
 
-  ## TODO: need to figure out
   fit <- fn(
     formula, data = data,
     family = family,

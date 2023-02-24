@@ -8,20 +8,20 @@ sample_model <- function(model, data, scenario = data.table::data.table(id = 1),
 
   # Setup failure tolerant model fitting
   fit_model <- function(model, data, ...) {
-    cmdstanr::cmdstan_model(model)$sample(data = data, ...)
+    fit <- cmdstanr::cmdstan_model(model)$sample(data = data, ...)
+    print(fit)
+    return(fit)
   }
   safe_fit_model <- purrr::safely(fit_model)
   fit <- safe_fit_model(model, data, ...)
 
   if (!is.null(fit$error)) {
     out <- out |>
-      DT(, fit := NULL) |>
-      DT(, error := fit$error)
+      DT(, error := list(fit$error[[1]]))
     diagnostics <- FALSE
   }else {
     out <- out |>
-      DT(, fit := list(fit$result)) |>
-      DT(, error := NULL)
+      DT(, fit := list(fit$result))
     fit <- fit$result
   }
 

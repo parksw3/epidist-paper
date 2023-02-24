@@ -700,13 +700,6 @@ We explore a range of models for estimating the log normal distribution.
 Starting with the naive continuous model and then gradually adding
 complexity to adjust for censoring to dates and right truncation.
 
-*TODO: Add dynamic model and work out how to process in the same control
-flow as used below. We may be able to integrate into a `brms` model by
-making incidence wide (i.e having the related incidence as features for
-every observation or by passing incidence as additional data and then
-having a look up location for each observation). Its not clear to me
-putting effort into this makes sense?*
-
 ``` r
 models <- list(
   "Naive" = quote(naive_delay),
@@ -880,7 +873,7 @@ tar_map(
     save_failures,
     fit |>
       DT(is.null(fit)) |>
-      DT(-c("fit")) |>
+      DT(,-c("fit")) |>
       save_csv(
         paste0(model_name, ".csv"), path = "data/failures"
       )

@@ -89,7 +89,8 @@ generated quantities {
     backwardmean[i] = 0;
     
     // this is quite approximate...
-    // but sort of the best we can do without sacrificing a ton of computational power
+    // but sort of the best we can do without sacrificing a ton of
+    // computational power
     for (j in 1 : (i - 1)) {
       backwardmean[i] += exp(log_diff_exp(lognormal_lcdf(j | Intercept, exp(Intercept_sigma)),
                                           lognormal_lcdf(j - 1 | Intercept, exp(Intercept_sigma)))
