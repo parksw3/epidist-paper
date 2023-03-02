@@ -414,3 +414,52 @@ dynamical_censoring_adjusted_delay <- function(
 
   return(fit)
 }
+
+epinowcast_delay <- function(formula = ~ 1, data, by = c(),
+                             family = "lognormal", fn, ...) {
+
+  data_as_counts <- data |>
+    DT(, .(cases = .N), by = c("ptime_daily", "stime_daily")) |>
+    DT(order(ptime_daily))
+
+  complete_counts <- epinowcast::enw_complete_dates(
+    data_as_counts, by = by
+  )
+
+  cum_counts <- complete_counts |>
+    DT(order(reference_date, report_date)) |>
+    DT(, .(confirm = cumsum(confirm)), by = c("reference_date"))
+
+  epinowcast_data <- epinowcast::epinowcast::enw_preprocess_data(
+    cum_counts, by = by, max_delay = 30
+  )
+
+  reference <- epinowcast::enw_reference(
+    parametric = formula,
+    distribution = family,
+    data = epinowcast_data
+  )
+
+  expectation <- epinowcast::enw_expectation(
+    r = ~ rw(week),
+    observation = ~ 1,
+    data = epinowcast_data
+  )
+
+  observation <- epinowcast::enw_obs(
+    family = "poisson",
+    data = epinowcast_data
+  )
+
+
+  epinowcast(
+    data = epinowcast_data,
+    reference = reference,
+    expectation = expectation,
+    obs = observation,
+    fit = epinowcast::enw_fit_opts(
+      sampler = epinowcast::enw_sample,
+      ...
+    )
+  )
+}
