@@ -264,6 +264,7 @@ latent_truncation_censoring_adjusted_delay <- function(
 #' Estimate delays from the backward delay distribution + brms
 #' @param data_cases data frame consisting of integer time column and incidence
 #' column
+#' @export
 dynamical_censoring_adjusted_delay <- function(
     formula = brms::bf(
       delay_lwr | cens(censored, delay_upr) ~ 1, sigma ~ 1
@@ -415,24 +416,27 @@ dynamical_censoring_adjusted_delay <- function(
   return(fit)
 }
 
+#' @export
 epinowcast_delay <- function(formula = ~ 1, data, by = c(),
                              family = "lognormal", fn, ...) {
 
+  max_delay <- max(data$delay_daily)
+
   data_as_counts <- data |>
-    DT(, .(cases = .N), by = c("ptime_daily", "stime_daily", by)) |>
+    DT(, .(new_confirm = .N), by = c("ptime_daily", "stime_daily", by)) |>
     DT(order(ptime_daily)) |>
     DT(, reference_date := as.Date("2000-01-01") + ptime_daily) |>
     DT(, report_date := as.Date("2000-01-01") + stime_daily)
 
-  complete_counts <- epinowcast::enw_complete_dates(
-    data_as_counts, by = by
-  )
-
-  cum_counts <- complete_counts |>
+  cum_counts <- data_as_counts |>
     epinowcast::enw_incidence_to_cumulative(by = by)
 
+  complete_counts <- epinowcast::enw_complete_dates(
+    cum_counts, by = by
+  )
+
   epinowcast_data <- epinowcast::enw_preprocess_data(
-    cum_counts, by = by, max_delay = 30
+    complete_counts, by = by, max_delay = max_delay
   )
 
   reference <- epinowcast::enw_reference(
@@ -442,17 +446,16 @@ epinowcast_delay <- function(formula = ~ 1, data, by = c(),
   )
 
   expectation <- epinowcast::enw_expectation(
-    r = ~ rw(week),
-    observation = ~ 1,
+    r = ~ week,
     data = epinowcast_data
   )
 
   observation <- epinowcast::enw_obs(
-    family = "poisson",
+    family = "negbin",
     data = epinowcast_data
   )
 
-  epinowcast(
+  epinowcast::epinowcast(
     data = epinowcast_data,
     reference = reference,
     expectation = expectation,

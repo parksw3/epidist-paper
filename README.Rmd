@@ -157,6 +157,17 @@ latent_truncation_censoring_fit <- latent_truncation_censoring_adjusted_delay(
 )
 ```
 
+Fit a joint model to estimate primary incidence and the delay to reporting secondary incidence (this is a thin wrapper around the `epinowcast` package that is not suggested for real-world usage).
+
+```{r}
+epinowcast_fit <- epinowcast_delay(
+  data = truncated_obs, parallel_chains = 4, adapt_delta = 0.95,
+  show_messages = FALSE, refresh = 0
+)
+
+summary(epinowcast_fit, type = "fit") |>
+  DT(variable %in% c("refp_mean_int[1]", "refp_sd_int[1]"))
+```
 ### Summarise model posteriors and compare to known truth
 
 Combine models into a named list.
