@@ -419,18 +419,19 @@ epinowcast_delay <- function(formula = ~ 1, data, by = c(),
                              family = "lognormal", fn, ...) {
 
   data_as_counts <- data |>
-    DT(, .(cases = .N), by = c("ptime_daily", "stime_daily")) |>
-    DT(order(ptime_daily))
+    DT(, .(cases = .N), by = c("ptime_daily", "stime_daily", by)) |>
+    DT(order(ptime_daily)) |>
+    DT(, reference_date := as.Date("2000-01-01") + ptime_daily) |>
+    DT(, report_date := as.Date("2000-01-01") + stime_daily)
 
   complete_counts <- epinowcast::enw_complete_dates(
     data_as_counts, by = by
   )
 
   cum_counts <- complete_counts |>
-    DT(order(reference_date, report_date)) |>
-    DT(, .(confirm = cumsum(confirm)), by = c("reference_date"))
+    epinowcast::enw_incidence_to_cumulative(by = by)
 
-  epinowcast_data <- epinowcast::epinowcast::enw_preprocess_data(
+  epinowcast_data <- epinowcast::enw_preprocess_data(
     cum_counts, by = by, max_delay = 30
   )
 
@@ -450,7 +451,6 @@ epinowcast_delay <- function(formula = ~ 1, data, by = c(),
     family = "poisson",
     data = epinowcast_data
   )
-
 
   epinowcast(
     data = epinowcast_data,
