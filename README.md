@@ -183,9 +183,9 @@ truncation_fit <- truncation_adjusted_delay(
 #> Running MCMC with 4 parallel chains...
 #> 
 #> Chain 1 finished in 0.7 seconds.
-#> Chain 3 finished in 0.8 seconds.
-#> Chain 4 finished in 0.7 seconds.
 #> Chain 2 finished in 0.8 seconds.
+#> Chain 3 finished in 0.7 seconds.
+#> Chain 4 finished in 0.7 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.7 seconds.
@@ -201,7 +201,7 @@ truncation_censoring_fit <- truncation_censoring_adjusted_delay(
 #> Running MCMC with 4 parallel chains...
 #> 
 #> Chain 1 finished in 1.0 seconds.
-#> Chain 2 finished in 1.1 seconds.
+#> Chain 2 finished in 1.0 seconds.
 #> Chain 3 finished in 1.0 seconds.
 #> Chain 4 finished in 1.1 seconds.
 #> 
@@ -222,11 +222,43 @@ latent_truncation_censoring_fit <- latent_truncation_censoring_adjusted_delay(
 #> Chain 1 finished in 3.4 seconds.
 #> Chain 3 finished in 3.4 seconds.
 #> Chain 4 finished in 3.3 seconds.
-#> Chain 2 finished in 3.5 seconds.
+#> Chain 2 finished in 3.4 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 3.4 seconds.
-#> Total execution time: 3.7 seconds.
+#> Total execution time: 3.6 seconds.
+```
+
+Fit a joint model to estimate primary incidence and the delay to
+reporting secondary incidence (this is a thin wrapper around the
+`epinowcast` package that is not suggested for real-world usage).
+
+``` r
+epinowcast_fit <- epinowcast_delay(
+  data = truncated_obs, parallel_chains = 4, adapt_delta = 0.95,
+  show_messages = FALSE, refresh = 0
+)
+#> Running MCMC with 4 parallel chains...
+#> 
+#> Chain 3 finished in 8.4 seconds.
+#> Chain 1 finished in 8.5 seconds.
+#> Chain 4 finished in 8.6 seconds.
+#> Chain 2 finished in 8.9 seconds.
+#> 
+#> All 4 chains finished successfully.
+#> Mean chain execution time: 8.6 seconds.
+#> Total execution time: 9.1 seconds.
+
+summary(epinowcast_fit, type = "fit") |>
+  DT(variable %in% c("refp_mean_int[1]", "refp_sd_int[1]"))
+#>            variable      mean    median         sd        mad       q5
+#>              <char>     <num>     <num>      <num>      <num>    <num>
+#> 1: refp_mean_int[1] 1.8587940 1.8551850 0.05159219 0.05152035 1.780055
+#> 2:   refp_sd_int[1] 0.4670998 0.4651165 0.03290403 0.03298266 0.417452
+#>          q20       q80       q95     rhat ess_bulk ess_tail
+#>        <num>     <num>     <num>    <num>    <num>    <num>
+#> 1: 1.8155560 1.9018820 1.9479140 1.000714 1985.428 2071.663
+#> 2: 0.4386644 0.4937258 0.5236812 1.001007 1950.422 1996.650
 ```
 
 ### Summarise model posteriors and compare to known truth
@@ -294,7 +326,7 @@ draws |>
   )
 ```
 
-<img src="figures/README-unnamed-chunk-10-1.png" width="100%" />
+<img src="figures/README-unnamed-chunk-11-1.png" width="100%" />
 
 Finally, check the mean posterior predictions for each model against the
 observed daily cohort mean.
