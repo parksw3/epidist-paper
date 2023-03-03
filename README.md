@@ -110,7 +110,7 @@ naive_fit <- naive_delay(data = truncated_obs, cores = 4, refresh = 0)
 #> Running MCMC with 4 parallel chains...
 #> 
 #> Chain 1 finished in 0.2 seconds.
-#> Chain 2 finished in 0.2 seconds.
+#> Chain 2 finished in 0.1 seconds.
 #> Chain 3 finished in 0.1 seconds.
 #> Chain 4 finished in 0.1 seconds.
 #> 
@@ -152,8 +152,8 @@ censored_fit <- censoring_adjusted_delay(
 #> Chain 3 finished in 0.6 seconds.
 #> 
 #> All 4 chains finished successfully.
-#> Mean chain execution time: 0.6 seconds.
-#> Total execution time: 0.7 seconds.
+#> Mean chain execution time: 0.5 seconds.
+#> Total execution time: 0.8 seconds.
 ```
 
 Adjust for censoring and filter to crudely adjust for right truncation.
@@ -166,7 +166,7 @@ filtered_censored_fit <- filtered_censoring_adjusted_delay(
 #> 
 #> Chain 1 finished in 0.3 seconds.
 #> Chain 2 finished in 0.3 seconds.
-#> Chain 3 finished in 0.4 seconds.
+#> Chain 3 finished in 0.3 seconds.
 #> Chain 4 finished in 0.3 seconds.
 #> 
 #> All 4 chains finished successfully.
@@ -183,9 +183,9 @@ truncation_fit <- truncation_adjusted_delay(
 #> Running MCMC with 4 parallel chains...
 #> 
 #> Chain 1 finished in 0.7 seconds.
+#> Chain 3 finished in 0.8 seconds.
 #> Chain 4 finished in 0.7 seconds.
 #> Chain 2 finished in 0.8 seconds.
-#> Chain 3 finished in 0.8 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.7 seconds.
@@ -207,7 +207,7 @@ truncation_censoring_fit <- truncation_censoring_adjusted_delay(
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 1.0 seconds.
-#> Total execution time: 1.2 seconds.
+#> Total execution time: 1.3 seconds.
 ```
 
 Adjust for right truncation and date censoring using a latent variable
@@ -219,14 +219,14 @@ latent_truncation_censoring_fit <- latent_truncation_censoring_adjusted_delay(
 )
 #> Running MCMC with 4 parallel chains...
 #> 
+#> Chain 1 finished in 3.4 seconds.
 #> Chain 2 finished in 3.4 seconds.
 #> Chain 3 finished in 3.4 seconds.
 #> Chain 4 finished in 3.3 seconds.
-#> Chain 1 finished in 3.5 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 3.4 seconds.
-#> Total execution time: 3.6 seconds.
+#> Total execution time: 3.5 seconds.
 ```
 
 Fit a joint model to estimate primary incidence and the delay to
@@ -236,47 +236,38 @@ reporting secondary incidence (this is a thin wrapper around the
 ``` r
 epinowcast_fit <- epinowcast_delay(
   data = truncated_obs, parallel_chains = 4, adapt_delta = 0.95,
-  show_messages = TRUE, refresh = 0
+  show_messages = FALSE, refresh = 0
 )
 #> Running MCMC with 4 parallel chains...
 #> 
-#> Chain 4 finished in 9.3 seconds.
+#> Chain 4 finished in 9.4 seconds.
 #> Chain 3 finished in 9.5 seconds.
+#> Chain 2 finished in 9.6 seconds.
 #> Chain 1 finished in 9.7 seconds.
-#> Chain 2 finished in 9.7 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 9.5 seconds.
 #> Total execution time: 9.8 seconds.
-
-summary(epinowcast_fit, type = "fit") |>
-  DT(variable %in% c("refp_mean_int[1]", "refp_sd_int[1]"))
-#>            variable      mean    median         sd        mad        q5
-#>              <char>     <num>     <num>      <num>      <num>     <num>
-#> 1: refp_mean_int[1] 1.8659783 1.8633050 0.05242735 0.05319569 1.7846185
-#> 2:   refp_sd_int[1] 0.4712699 0.4693385 0.03219485 0.03169354 0.4216105
-#>          q20       q80       q95     rhat ess_bulk ess_tail
-#>        <num>     <num>     <num>    <num>    <num>    <num>
-#> 1: 1.8216680 1.9109040 1.9537510 1.001308 1858.106 2164.185
-#> 2: 0.4440106 0.4974102 0.5280992 1.002284 1790.986 1888.790
+epinowcast_draws <- extract_epinowcast_draws(epinowcast_fit) |>
+  DT(, model := "Joint incidence and forward delay")
 ```
 
-### Summarise model posteriors and compare to known truth
-
-Combine models into a named list.
-
-``` r
-models <- list(
-  "Naive" = naive_fit,
-  "Filtered" = filtered_fit,
-  "Censoring adjusted" = censored_fit,
-  "Filtered and censoring adjusted" = filtered_censored_fit,
-  "Truncation adjusted" = truncation_fit,
-  "Truncation and censoring adjusted" = truncation_censoring_fit,
-  "Latent variable truncation and censoring adjusted" =
-    latent_truncation_censoring_fit
-)
-```
+    ### Summarise model posteriors and compare to known truth
+    
+    Combine models into a named list.
+    
+    
+    ```r
+    models <- list(
+      "Naive" = naive_fit,
+      "Filtered" = filtered_fit,
+      "Censoring adjusted" = censored_fit,
+      "Filtered and censoring adjusted" = filtered_censored_fit,
+      "Truncation adjusted" = truncation_fit,
+      "Truncation and censoring adjusted" = truncation_censoring_fit,
+      "Latent variable truncation and censoring adjusted" =
+        latent_truncation_censoring_fit
+    )
 
 Extract and summarise lognormal posterior estimates.
 
@@ -284,7 +275,12 @@ Extract and summarise lognormal posterior estimates.
 draws <- models |>
   map(extract_lognormal_draws) |>
   rbindlist(idcol = "model") |>
-  DT(, model := factor(model, levels = rev(names(models))))
+  rbind(epinowcast_draws, use.names = TRUE) |>
+  DT(,
+   model := factor(
+    model, levels = c(rev(names(models)), "Joint incidence and forward delay")
+   )
+  )
 
 summarised_draws <- draws |>
   draws_to_long() |>
@@ -302,6 +298,7 @@ knitr::kable(summarised_draws[parameter %in% c("meanlog", "sdlog")])
 | Truncation adjusted                               | meanlog   | 1.770 |  1.770 | 1.660 | 1.680 | 1.720 | 1.750 | 1.790 | 1.820 | 1.880 | 1.910 |
 | Truncation and censoring adjusted                 | meanlog   | 1.750 |  1.750 | 1.660 | 1.670 | 1.710 | 1.730 | 1.770 | 1.790 | 1.840 | 1.860 |
 | Latent variable truncation and censoring adjusted | meanlog   | 1.790 |  1.790 | 1.680 | 1.700 | 1.740 | 1.770 | 1.810 | 1.840 | 1.910 | 1.940 |
+| Joint incidence and forward delay                 | meanlog   | 1.870 |  1.860 | 1.770 | 1.780 | 1.820 | 1.840 | 1.880 | 1.910 | 1.950 | 1.970 |
 | Naive                                             | sdlog     | 0.489 |  0.487 | 0.441 | 0.449 | 0.467 | 0.478 | 0.497 | 0.510 | 0.534 | 0.544 |
 | Filtered                                          | sdlog     | 0.452 |  0.450 | 0.398 | 0.407 | 0.427 | 0.440 | 0.461 | 0.475 | 0.503 | 0.513 |
 | Censoring adjusted                                | sdlog     | 0.450 |  0.449 | 0.404 | 0.410 | 0.428 | 0.439 | 0.460 | 0.472 | 0.494 | 0.506 |
@@ -309,6 +306,7 @@ knitr::kable(summarised_draws[parameter %in% c("meanlog", "sdlog")])
 | Truncation adjusted                               | sdlog     | 0.578 |  0.574 | 0.503 | 0.513 | 0.540 | 0.559 | 0.591 | 0.613 | 0.656 | 0.676 |
 | Truncation and censoring adjusted                 | sdlog     | 0.515 |  0.512 | 0.445 | 0.456 | 0.482 | 0.498 | 0.527 | 0.547 | 0.580 | 0.599 |
 | Latent variable truncation and censoring adjusted | sdlog     | 0.536 |  0.533 | 0.460 | 0.470 | 0.500 | 0.517 | 0.549 | 0.569 | 0.614 | 0.630 |
+| Joint incidence and forward delay                 | sdlog     | 1.600 |  1.600 | 1.510 | 1.520 | 1.560 | 1.580 | 1.620 | 1.640 | 1.700 | 1.720 |
 
 Plot summarised posterior estimates from each model compared to the
 ground truth.

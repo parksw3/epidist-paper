@@ -97,6 +97,43 @@ extract_lognormal_draws <- function(
   return(draws[])
 }
 
+#' Extract posterior samples for a lognormal epinowcast model
+#' l@export
+extract_epinowcast_draws <- function(
+  data, id_vars, from_dt = FALSE
+) {
+  if (from_dt) {
+    if (!any(colnames(data) %in% "fit")) {
+      return(id_vars[])
+    }
+    draws <- data$fit[[1]]$draws(
+      variables = c("refp_mean_int[1]", "refp_sd_int[1]"), format = "draws_df"
+    )
+  }else {
+    draws <- data$fit[[1]]$draws(
+      variables = c("refp_mean_int[1]", "refp_sd_int[1]"), format = "draws_df"
+    )
+  }
+
+  draws <- draws |>
+    data.table::setDT()
+
+  data.table::setnames(
+    draws, c("refp_mean_int[1]", "refp_sd_int[1]"), c("meanlog", "sdlog"),
+    skip_absent = TRUE
+  )
+  draws <- draws[, .(meanlog, sdlog)]
+  draws <- draws[, sdlog := exp(sdlog)]
+  draws <- add_natural_scale_mean_sd(draws)
+
+  if (!missing(id_vars)) {
+    draws <- merge(
+      draws[, id := id_vars$id], id_vars, by = "id"
+    )
+  }
+  return(draws[])
+}
+
 #' Convert posterior lognormal samples to long format
 #' @export
 draws_to_long <- function(draws) {
