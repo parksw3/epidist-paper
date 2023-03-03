@@ -98,7 +98,7 @@ extract_lognormal_draws <- function(
 }
 
 #' Extract posterior samples for a lognormal epinowcast model
-#' l@export
+#' @export
 extract_epinowcast_draws <- function(
   data, id_vars, from_dt = FALSE
 ) {
@@ -123,7 +123,6 @@ extract_epinowcast_draws <- function(
     skip_absent = TRUE
   )
   draws <- draws[, .(meanlog, sdlog)]
-  draws <- draws[, sdlog := exp(sdlog)]
   draws <- add_natural_scale_mean_sd(draws)
 
   if (!missing(id_vars)) {

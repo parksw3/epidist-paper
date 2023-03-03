@@ -110,7 +110,7 @@ naive_fit <- naive_delay(data = truncated_obs, cores = 4, refresh = 0)
 #> Running MCMC with 4 parallel chains...
 #> 
 #> Chain 1 finished in 0.2 seconds.
-#> Chain 2 finished in 0.1 seconds.
+#> Chain 2 finished in 0.2 seconds.
 #> Chain 3 finished in 0.1 seconds.
 #> Chain 4 finished in 0.1 seconds.
 #> 
@@ -148,12 +148,12 @@ censored_fit <- censoring_adjusted_delay(
 #> 
 #> Chain 1 finished in 0.5 seconds.
 #> Chain 2 finished in 0.6 seconds.
-#> Chain 4 finished in 0.5 seconds.
 #> Chain 3 finished in 0.6 seconds.
+#> Chain 4 finished in 0.5 seconds.
 #> 
 #> All 4 chains finished successfully.
-#> Mean chain execution time: 0.5 seconds.
-#> Total execution time: 0.8 seconds.
+#> Mean chain execution time: 0.6 seconds.
+#> Total execution time: 0.7 seconds.
 ```
 
 Adjust for censoring and filter to crudely adjust for right truncation.
@@ -164,14 +164,14 @@ filtered_censored_fit <- filtered_censoring_adjusted_delay(
 )
 #> Running MCMC with 4 parallel chains...
 #> 
-#> Chain 1 finished in 0.3 seconds.
+#> Chain 1 finished in 0.4 seconds.
 #> Chain 2 finished in 0.3 seconds.
-#> Chain 3 finished in 0.3 seconds.
+#> Chain 3 finished in 0.4 seconds.
 #> Chain 4 finished in 0.3 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.4 seconds.
+#> Total execution time: 0.5 seconds.
 ```
 
 Adjust for right truncation.
@@ -183,13 +183,13 @@ truncation_fit <- truncation_adjusted_delay(
 #> Running MCMC with 4 parallel chains...
 #> 
 #> Chain 1 finished in 0.7 seconds.
+#> Chain 2 finished in 0.8 seconds.
 #> Chain 3 finished in 0.8 seconds.
 #> Chain 4 finished in 0.7 seconds.
-#> Chain 2 finished in 0.8 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.7 seconds.
-#> Total execution time: 0.9 seconds.
+#> Total execution time: 0.8 seconds.
 ```
 
 Adjust for right truncation and date censoring.
@@ -220,13 +220,13 @@ latent_truncation_censoring_fit <- latent_truncation_censoring_adjusted_delay(
 #> Running MCMC with 4 parallel chains...
 #> 
 #> Chain 1 finished in 3.4 seconds.
-#> Chain 2 finished in 3.4 seconds.
 #> Chain 3 finished in 3.4 seconds.
-#> Chain 4 finished in 3.3 seconds.
+#> Chain 2 finished in 3.5 seconds.
+#> Chain 4 finished in 3.5 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 3.4 seconds.
-#> Total execution time: 3.5 seconds.
+#> Total execution time: 3.7 seconds.
 ```
 
 Fit a joint model to estimate primary incidence and the delay to
@@ -240,14 +240,14 @@ epinowcast_fit <- epinowcast_delay(
 )
 #> Running MCMC with 4 parallel chains...
 #> 
-#> Chain 4 finished in 9.4 seconds.
-#> Chain 3 finished in 9.5 seconds.
-#> Chain 2 finished in 9.6 seconds.
-#> Chain 1 finished in 9.7 seconds.
+#> Chain 4 finished in 9.3 seconds.
+#> Chain 3 finished in 9.6 seconds.
+#> Chain 1 finished in 9.8 seconds.
+#> Chain 2 finished in 9.9 seconds.
 #> 
 #> All 4 chains finished successfully.
-#> Mean chain execution time: 9.5 seconds.
-#> Total execution time: 9.8 seconds.
+#> Mean chain execution time: 9.6 seconds.
+#> Total execution time: 9.9 seconds.
 epinowcast_draws <- extract_epinowcast_draws(epinowcast_fit) |>
   DT(, model := "Joint incidence and forward delay")
 ```
@@ -306,7 +306,7 @@ knitr::kable(summarised_draws[parameter %in% c("meanlog", "sdlog")])
 | Truncation adjusted                               | sdlog     | 0.578 |  0.574 | 0.503 | 0.513 | 0.540 | 0.559 | 0.591 | 0.613 | 0.656 | 0.676 |
 | Truncation and censoring adjusted                 | sdlog     | 0.515 |  0.512 | 0.445 | 0.456 | 0.482 | 0.498 | 0.527 | 0.547 | 0.580 | 0.599 |
 | Latent variable truncation and censoring adjusted | sdlog     | 0.536 |  0.533 | 0.460 | 0.470 | 0.500 | 0.517 | 0.549 | 0.569 | 0.614 | 0.630 |
-| Joint incidence and forward delay                 | sdlog     | 1.600 |  1.600 | 1.510 | 1.520 | 1.560 | 1.580 | 1.620 | 1.640 | 1.700 | 1.720 |
+| Joint incidence and forward delay                 | sdlog     | 0.471 |  0.469 | 0.415 | 0.422 | 0.444 | 0.458 | 0.482 | 0.497 | 0.528 | 0.543 |
 
 Plot summarised posterior estimates from each model compared to the
 ground truth.
