@@ -418,25 +418,30 @@ dynamical_censoring_adjusted_delay <- function(
 
 #' @export
 epinowcast_delay <- function(formula = ~ 1, data, by = c(),
-                             family = "lognormal", fn, ...) {
-
-  max_delay <- max(data$delay_daily)
-
+                             family = "lognormal", max_delay = 30, ...) {
   data_as_counts <- data |>
     DT(, .(new_confirm = .N), by = c("ptime_daily", "stime_daily", by)) |>
     DT(order(ptime_daily)) |>
     DT(, reference_date := as.Date("2000-01-01") + ptime_daily) |>
     DT(, report_date := as.Date("2000-01-01") + stime_daily)
 
+  # Actual largest observerable delay
+  preprocess_delay <- min(
+    max_delay,
+    max(data_as_counts$report_date) - min(data_as_counts$reference_date) + 1
+  )
+  # Update to make sure we have enough data to fit the model
+  complete_delay <- max(max_delay, preprocess_delay)
+
   cum_counts <- data_as_counts |>
     epinowcast::enw_incidence_to_cumulative(by = by)
 
   complete_counts <- epinowcast::enw_complete_dates(
-    cum_counts, by = by
+    cum_counts, by = by, max_delay = complete_delay
   )
 
   epinowcast_data <- epinowcast::enw_preprocess_data(
-    complete_counts, by = by, max_delay = max_delay
+    complete_counts, by = by, max_delay = preprocess_delay
   )
 
   reference <- epinowcast::enw_reference(

@@ -162,7 +162,7 @@ Fit a joint model to estimate primary incidence and the delay to reporting secon
 ```{r}
 epinowcast_fit <- epinowcast_delay(
   data = truncated_obs, parallel_chains = 4, adapt_delta = 0.95,
-  show_messages = FALSE, refresh = 0
+  show_messages = TRUE, refresh = 0
 )
 
 summary(epinowcast_fit, type = "fit") |>
@@ -195,7 +195,7 @@ draws <- models |>
 
 summarised_draws <- draws |>
   draws_to_long() |>
-  summarise_draws(sf = 2)
+  summarise_draws(sf = 3)
 
 knitr::kable(summarised_draws[parameter %in% c("meanlog", "sdlog")])
 ```
