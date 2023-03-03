@@ -148,12 +148,12 @@ censored_fit <- censoring_adjusted_delay(
 #> 
 #> Chain 1 finished in 0.5 seconds.
 #> Chain 2 finished in 0.6 seconds.
-#> Chain 3 finished in 0.6 seconds.
 #> Chain 4 finished in 0.5 seconds.
+#> Chain 3 finished in 0.6 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.6 seconds.
-#> Total execution time: 0.7 seconds.
+#> Total execution time: 0.8 seconds.
 ```
 
 Adjust for censoring and filter to crudely adjust for right truncation.
@@ -166,12 +166,12 @@ filtered_censored_fit <- filtered_censoring_adjusted_delay(
 #> 
 #> Chain 1 finished in 0.4 seconds.
 #> Chain 2 finished in 0.3 seconds.
-#> Chain 3 finished in 0.4 seconds.
+#> Chain 3 finished in 0.3 seconds.
 #> Chain 4 finished in 0.3 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.5 seconds.
+#> Total execution time: 0.4 seconds.
 ```
 
 Adjust for right truncation.
@@ -220,13 +220,13 @@ latent_truncation_censoring_fit <- latent_truncation_censoring_adjusted_delay(
 #> Running MCMC with 4 parallel chains...
 #> 
 #> Chain 1 finished in 3.4 seconds.
+#> Chain 2 finished in 3.4 seconds.
 #> Chain 3 finished in 3.4 seconds.
-#> Chain 2 finished in 3.5 seconds.
-#> Chain 4 finished in 3.5 seconds.
+#> Chain 4 finished in 3.3 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 3.4 seconds.
-#> Total execution time: 3.7 seconds.
+#> Total execution time: 3.5 seconds.
 ```
 
 Fit a joint model to estimate primary incidence and the delay to
@@ -240,34 +240,34 @@ epinowcast_fit <- epinowcast_delay(
 )
 #> Running MCMC with 4 parallel chains...
 #> 
-#> Chain 4 finished in 9.3 seconds.
-#> Chain 3 finished in 9.6 seconds.
-#> Chain 1 finished in 9.8 seconds.
-#> Chain 2 finished in 9.9 seconds.
+#> Chain 4 finished in 9.4 seconds.
+#> Chain 2 finished in 9.6 seconds.
+#> Chain 3 finished in 9.5 seconds.
+#> Chain 1 finished in 9.7 seconds.
 #> 
 #> All 4 chains finished successfully.
 #> Mean chain execution time: 9.6 seconds.
-#> Total execution time: 9.9 seconds.
+#> Total execution time: 9.8 seconds.
 epinowcast_draws <- extract_epinowcast_draws(epinowcast_fit) |>
   DT(, model := "Joint incidence and forward delay")
 ```
 
-    ### Summarise model posteriors and compare to known truth
-    
-    Combine models into a named list.
-    
-    
-    ```r
-    models <- list(
-      "Naive" = naive_fit,
-      "Filtered" = filtered_fit,
-      "Censoring adjusted" = censored_fit,
-      "Filtered and censoring adjusted" = filtered_censored_fit,
-      "Truncation adjusted" = truncation_fit,
-      "Truncation and censoring adjusted" = truncation_censoring_fit,
-      "Latent variable truncation and censoring adjusted" =
-        latent_truncation_censoring_fit
-    )
+### Summarise model posteriors and compare to known truth
+
+Combine models into a named list.
+
+``` r
+models <- list(
+  "Naive" = naive_fit,
+  "Filtered" = filtered_fit,
+  "Censoring adjusted" = censored_fit,
+  "Filtered and censoring adjusted" = filtered_censored_fit,
+  "Truncation adjusted" = truncation_fit,
+  "Truncation and censoring adjusted" = truncation_censoring_fit,
+  "Latent variable truncation and censoring adjusted" =
+    latent_truncation_censoring_fit
+)
+```
 
 Extract and summarise lognormal posterior estimates.
 
@@ -278,7 +278,7 @@ draws <- models |>
   rbind(epinowcast_draws, use.names = TRUE) |>
   DT(,
    model := factor(
-    model, levels = c(rev(names(models)), "Joint incidence and forward delay")
+    model, levels = c("Joint incidence and forward delay", rev(names(models)))
    )
   )
 
@@ -336,8 +336,10 @@ truncated_draws <- draws |>
     ptime = range(truncated_obs$ptime_daily)
   ) |>
   summarise_variable(variable = "trunc_mean", by = c("obs_horizon", "model")) |>
-  DT(, model := factor(model, levels = rev(names(models))))
-
+  DT(, model := factor(
+      model, levels = c("Joint incidence and forward delay", rev(names(models)))
+    )
+  )
 
 truncated_draws |>
   plot_mean_posterior_pred(

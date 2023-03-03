@@ -167,7 +167,7 @@ epinowcast_fit <- epinowcast_delay(
 epinowcast_draws <- extract_epinowcast_draws(epinowcast_fit) |>
   DT(, model := "Joint incidence and forward delay")
 ```
-```
+
 ### Summarise model posteriors and compare to known truth
 
 Combine models into a named list.
@@ -194,7 +194,7 @@ draws <- models |>
   rbind(epinowcast_draws, use.names = TRUE) |>
   DT(,
    model := factor(
-    model, levels = c(rev(names(models)), "Joint incidence and forward delay")
+    model, levels = c("Joint incidence and forward delay", rev(names(models)))
    )
   )
 
@@ -228,8 +228,10 @@ truncated_draws <- draws |>
     ptime = range(truncated_obs$ptime_daily)
   ) |>
   summarise_variable(variable = "trunc_mean", by = c("obs_horizon", "model")) |>
-  DT(, model := factor(model, levels = rev(names(models))))
-
+  DT(, model := factor(
+      model, levels = c("Joint incidence and forward delay", rev(names(models)))
+    )
+  )
 
 truncated_draws |>
   plot_mean_posterior_pred(
