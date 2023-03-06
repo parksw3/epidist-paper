@@ -682,23 +682,23 @@ tar_map(
 
 - Repeat the same steps using the `epinowcast` wrapper (which requires slightly different setup and so can't be included in the above workflow).
 
-```{targets fit_models}
+```{targets fit_epinowcast}
 tar_file(
   epinowcast_path,
   paste0(
     "data/models/", "epinowcast", ".stan"
   ) |>
     fs::file_create()
-),
+)
 tar_file(
   epinowcast_compiled_model_path,
   {
     stan_code <- epinowcast::enw_model(
       dir = here::here("data/models")
     )
-    return(stan_code$stan_file()()
+    stan_code$stan_file()
   }
-),
+)
 tar_target(
   epinowcast_fit, 
     epinowcast_delay(
@@ -716,32 +716,32 @@ tar_target(
     ),
   pattern = map(list_observations, scenarios),
   deployment = "worker"
-),
+)
 tar_file(
   epinowcast_save_diagnostics,
   save_csv(
     fit[, -c("fit")], "epinowcast.csv", path = "data/diagnostics"
   )
-),
+)
 tar_target(
   epinowcast_draws,
   epinowcast_fit |>
     extract_epinowcast_draws(scenarios, from_dt = TRUE),
   pattern = map(epinowcast_fit, scenarios)
-),
+)
 tar_file(
   epinowcast_save_lognormal_draws,
   save_dataset(
     draws, path = paste0("data/posteriors/", "epinowcast"),
     partitioning = "id"
   )
-),
+)
 tar_target(
   epinowcast_summarised_draws,
   epinowcast_draws |> 
     draws_to_long() |>
     summarise_draws(sf = 2)
-),
+)
 tar_file(
   epinowcast_save_summarised_draws,
   save_csv(
