@@ -418,7 +418,8 @@ dynamical_censoring_adjusted_delay <- function(
 
 #' @export
 epinowcast_delay <- function(formula = ~ 1, data, by = c(),
-                             family = "lognormal", max_delay = 30, ...) {
+                             family = "lognormal", max_delay = 30,
+                             sampler = epinowcast::enw_sample, ...) {
   data_as_counts <- data |>
     DT(, .(new_confirm = .N), by = c("ptime_daily", "stime_daily", by)) |>
     DT(order(ptime_daily)) |>
@@ -466,7 +467,7 @@ epinowcast_delay <- function(formula = ~ 1, data, by = c(),
     expectation = expectation,
     obs = observation,
     fit = epinowcast::enw_fit_opts(
-      sampler = epinowcast::enw_sample,
+      sampler = sampler,
       ...
     )
   )
