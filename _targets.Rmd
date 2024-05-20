@@ -1,5 +1,5 @@
 ---
-title: "Analysis Pipeline: Dynamic Truncation"
+title: "Analysis Pipeline"
 output: github_document
 ---
 
